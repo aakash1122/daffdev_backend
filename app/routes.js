@@ -3,17 +3,6 @@ var User = require("../models/User");
 var Post = require("../models/Post");
 
 module.exports = function(app, passport) {
-  // =====================================
-  // HOME PAGE (with login links) ========
-  // =====================================
-  app.get("/", function(req, res) {
-    res.render("homepage"); // load the homepage.ejs file
-  });
-  // login routes...............
-  app.get("/login", (req, res) => {
-    res.render("login");
-  });
-
   app.post(
     "/login",
     passport.authenticate("local", {
@@ -23,10 +12,6 @@ module.exports = function(app, passport) {
     (re, res) => {}
   );
   // signup routes....
-  app.get("/signup", (req, res) => {
-    res.render("signup");
-  });
-
   app.post("/signup", (req, res) => {
     var email = req.body.email,
       username = req.body.username,
@@ -124,6 +109,6 @@ module.exports = function(app, passport) {
     if (req.isAuthenticated()) return next();
 
     // if they aren't redirect them to the home page
-    res.redirect("/login");
+    res.send(false);
   }
 };
