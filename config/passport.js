@@ -16,16 +16,21 @@ module.exports = function(passport) {
 
   // passport setup
   passport.use(
-    new LocalStrategy(function(username, password, done) {
-      User.findOne({ username: username }, function(err, user) {
-        if (err) {
-          return done(err);
+    new LocalStrategy({
+    usernameField: 'email',
+  },function(email, password, done) {
+    User.findOne({ email: email }, function (err, user) {
+      if (err) { return done(err); }
+      if(user){
+        if (user.password === password) {
+          return done(null, user)
+        }else{
+          return done(null, false, {message: "wrong password"})
         }
-        if (!user) {
-          return done(null, false, { message: "Incorrect username." });
-        }
-        return done(null, user);
-      });
+      }else{
+        return done(null, false, {message: "Email is not registerd"})
+      }
+    });
     })
   );
 };

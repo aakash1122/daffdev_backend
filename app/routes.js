@@ -3,14 +3,19 @@ var User = require("../models/User");
 var Post = require("../models/Post");
 
 module.exports = function(app, passport) {
+  app.get("/", (req, res) => {
+    res.json(req.user)
+  })
   app.post(
-    "/login",
-    passport.authenticate("local", {
-      successRedirect: "/secret",
-      failureRedirect: "/login"
-    }),
-    (re, res) => {}
-  );
+      '/login',
+      passport.authenticate('local'),
+      (req, res) => {
+          var userInfo = {
+              username: req.user.username
+          };
+          res.send(userInfo);
+      }
+  )
   // signup routes....
   app.post("/signup", (req, res) => {
     var email = req.body.email,

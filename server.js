@@ -6,14 +6,14 @@ var express = require("express"),
   flash = require("connect-flash"),
   morgan = require("morgan"),
   db = require("./config/database"),
+  cors = require('cors'),
   app = express();
 
-var allowCrossDomain = function(req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE");
-  res.header("Access-Control-Allow-Headers", "Content-Type");
-  next();
-};
+  app.use(cors({
+      origin:['http://localhost:3000'],
+      methods:['GET','POST'],
+      credentials: true // enable set cookie
+  }));
 
 // mongodb setup
 mongoose.connect(
@@ -25,7 +25,6 @@ require("./config/passport")(passport); // pass passport for configuration
 
 app.set("view engine", "ejs");
 app.use(morgan("dev")); // log every request to the console
-app.use(allowCrossDomain); //CORS APPLY
 // bodyparser setup
 app.use(bodyParser.urlencoded({ extended: false }));
 // parse application/json
@@ -40,6 +39,11 @@ app.use(
 );
 app.use(passport.initialize());
 app.use(passport.session());
+
+app.use( (req, res, next) => {
+  console.log('req.session', req.session);
+  return next();
+});
 
 // routes ======================================================================
 require("./app/routes")(app, passport); // load our routes and pass in our app and fully configured passport
