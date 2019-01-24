@@ -7,6 +7,7 @@ var express = require("express"),
   morgan = require("morgan"),
   db = require("./config/database"),
   cors = require('cors'),
+  path = require('path'),
   app = express();
 
   app.use(cors({
@@ -20,6 +21,8 @@ mongoose.connect(
   db.database,
   () => console.log("DB connected..........")
 );
+
+app.use('/static', express.static(path.join(__dirname, 'uploads')))
 
 require("./config/passport")(passport); // pass passport for configuration
 

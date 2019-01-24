@@ -1,11 +1,43 @@
-var gravatar_url = require("gravatar-url");
 var User = require("../models/User");
 var Post = require("../models/Post");
+var multer = require("multer");
+var path = require("path");
+
+var storage = multer.diskStorage({
+  destination: function(req, file, cb){
+    cb(null, "./uploads/")
+  },
+  filename: function(req, file, cb){
+    cb(null, Date.now() +"-"+file.originalname)
+  }
+})
+
+var fileFilter = (req, file, cb) => {
+  if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
+    cb(null, true)
+  }else{
+    cb(null, false)
+  }
+}
+
+var upload = multer(
+  {
+    storage: storage,
+    limits:{
+  fileSize: 1024 * 1024
+},
+fileFilter: fileFilter
+})
 
 module.exports = function(app, passport) {
   app.get("/", (req, res) => {
     res.json(req.user)
   })
+  // image route
+app.get('/:image', (req, res) => {
+  res.sendFile(path.join(__dirname,"../uploads/",req.params.image));
+})
+
   app.post(
       '/login',
       passport.authenticate('local'),
@@ -17,17 +49,19 @@ module.exports = function(app, passport) {
       }
   )
   // signup routes....
-  app.post("/signup", (req, res) => {
+  app.post('/signup',upload.single("userImage"), (req, res) => {
+    console.log(req.file);
     var email = req.body.email,
       username = req.body.username,
-      password = req.body.password;
+      password = req.body.password,
+      image = req.file.filename
     const newUser = new User({
       email,
       username,
       password,
-      image: gravatar_url(req.body.email, { size: 500, default: "retro" })
+      image
     });
-
+console.log(req.file);
     newUser
       .save()
       .then(user => {
@@ -35,7 +69,6 @@ module.exports = function(app, passport) {
       })
       .catch(err => console.log(err));
   });
-
   // get all Users
   app.get("/users", (req, res) => {
     User.find()
@@ -107,6 +140,7 @@ module.exports = function(app, passport) {
   app.get("/secret", isLoggedIn, (req, res) => {
     res.send("protected route");
   });
+
 
   // route middleware to make sure a user is logged in
   function isLoggedIn(req, res, next) {
